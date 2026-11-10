@@ -1,0 +1,14 @@
+{
+  "name": "career-elimination-exam",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Interactive exam that crosses off careers until three focus options remain. Scores every occupation in the O*NET database.",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build:data": "node scripts/build-data.mjs",
+    "test": "node --test \"tests/*.test.mjs\"",
+    "dev": "node scripts/serve.mjs"
+  }
+}

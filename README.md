@@ -1,17 +1,23 @@
 # Career Elimination Exam
 
-An interactive exam that starts with 125 careers and crosses off every one that doesn't fit you. It ends with three focus options and a first-year plan.
+[![CI](https://github.com/BigDRod1/career-elimination-exam/actions/workflows/ci.yml/badge.svg)](https://github.com/BigDRod1/career-elimination-exam/actions/workflows/ci.yml)
+
+**Live site:** https://career-elimination-exam.vercel.app
+
+An in-depth, free career exam that starts with **917 careers** and crosses off every one that doesn't fit you. That includes every occupation in the U.S. government's O*NET database, plus a few non-standard paths such as startup founder and content creator. It ends with three focus options and a first-year plan.
+
+If it helps you, please ⭐ star the repo so other people can find it.
 
 ## How it works
 
-You answer 11 parts. Every answer re-scores all 125 careers live.
+You answer 11 parts. Every answer re-scores all 917 careers live, in your browser.
 
 | Part | What it measures |
 | --- | --- |
 | 1. Where you stand | Education, runway, time to a full salary, willingness to move |
-| 2. Personality | Big Five traits (20 statements) |
+| 2. Personality | Big Five traits (20 statements), matched against O*NET work styles |
 | 3. Interests | Holland RIASEC types (30 activities), weighted most heavily |
-| 4. Strengths | 17 self-rated skills |
+| 4. Strengths | 17 self-rated skills, matched against O*NET skill importance |
 | 5. Values | 13 work values plus three must-haves |
 | 6. Work style | Setting, people contact, structure, pace, remote, hours, schedule, employer, role |
 | 7. Dealbreakers | 27 hard refusals, education ceiling, income floor, risk tolerance |
@@ -26,21 +32,59 @@ Careers leave the running in three ways:
 - **Weak fit.** Once four scoring areas have answers, careers far behind your leader drop out.
 - **Your own cuts.** You decide the rest in the gut check, on the career board or in the showdown.
 
-The fit score blends interests (24%), values (16%), work style (14%), strengths (12%), personality (10%), life goals (10%), energy (8%) and outlook (6%).
+The fit score blends interests (24%), values (16%), work style (14%), strengths (12%), personality (10%), life goals (10%), energy (8%) and outlook (6%). The scoring lives in [`assets/engine.js`](assets/engine.js) as pure functions with tests.
 
-## Views
+## Data
 
-- **Exam.** The 11 parts, with a live tracker of what's still standing.
-- **Career board.** All 125 careers with fit scores and the reason each was crossed off. Open any career for its breakdown, pay, schooling, growth and AI exposure.
-- **Your profile.** Holland code and archetype, interest hexagon, personality, values, strengths, work style and ikigai.
-- **Results.** Three focus options, a 12-month plan, the elimination funnel, a full ranking and a log of every cut.
+| Source | Used for | License |
+| --- | --- | --- |
+| [O*NET 31.0 Database](https://www.onetcenter.org/database.html), USDOL/ETA | Titles, descriptions, interest profiles, skills, abilities, knowledge, work activities, work context, work styles, education, related occupations, alternate titles | CC BY 4.0 |
+| [BLS Occupational Employment and Wage Statistics](https://www.bls.gov/oes/), May 2025 | Median and 90th-percentile pay | Public domain |
+| [BLS Employment Projections](https://www.bls.gov/emp/), 2025–35 | Job growth, openings, employment, self-employment share, typical education and training | Public domain |
 
-## Running it
+[`scripts/build-data.mjs`](scripts/build-data.mjs) turns these sources into `data/careers.json`. Every derived score, such as people contact, physical demand, remote feasibility, estimated AI exposure and dealbreaker flags, is computed from documented O*NET elements in that script. Six non-standard paths are hand-estimated in [`scripts/extra-careers.mjs`](scripts/extra-careers.mjs) and labeled as estimates in the app.
 
-It is a single static `index.html` with no build step and no dependencies beyond Google Fonts. Open the file in a browser, or serve the folder with any static host.
+**Attribution:** This site incorporates information from the O*NET 31.0 Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under the CC BY 4.0 license. USDOL/ETA has not approved, endorsed, or tested these modifications. O*NET® is a trademark of USDOL/ETA.
 
-Answers are saved in the browser's local storage only. Nothing is sent to a server. Use **Save answers (.json)** on the Results page to move your progress to another device.
+## Development
+
+No build step and no runtime dependencies. You need Node 20 or newer.
+
+```bash
+npm run dev          # serve the site at http://127.0.0.1:5173
+npm test             # data validation and engine tests
+npm run build:data   # rebuild data/careers.json (downloads O*NET tables into .cache/)
+```
+
+ES modules need an HTTP server, so opening `index.html` straight from disk will not work.
+
+### Refreshing the data
+
+- **O*NET:** bump `ONET_VERSION` in `scripts/build-data.mjs` and run `npm run build:data`.
+- **BLS:** BLS blocks scripted downloads. Open the BLS projections table in a browser, paste [`scripts/bls-extract.js`](scripts/bls-extract.js) into the devtools console, move the two downloaded files into `data-src/bls/`, then rebuild.
+
+### Project layout
+
+```
+index.html            page shell, metadata, attribution
+assets/app.js         UI
+assets/engine.js      scoring and elimination (pure, tested)
+assets/catalog.js     exam questions and reference data
+assets/styles.css     styles (light and dark)
+data/careers.json     generated dataset (917 careers)
+data-src/bls/         BLS snapshots
+scripts/              data pipeline, dev server, BLS refresh snippet
+tests/                node:test suites
+```
+
+## Privacy
+
+Answers are saved in your browser's local storage only. There are no accounts, analytics or server calls, apart from loading the page, fonts and the GitHub star count. Use **Save answers (.json)** on the Results page to move your progress to another device.
 
 ## Caveats
 
-This is a structured self-reflection tool, not a validated psychological test. Pay, growth and automation figures are rough US estimates for comparing careers. For current data, see the [Occupational Outlook Handbook](https://www.bls.gov/ooh/).
+This is a structured self-reflection tool, not a validated psychological test. Pay and growth are national U.S. figures and vary a lot by location and experience. AI exposure is an estimate derived from O*NET task data, not a forecast.
+
+## License
+
+Code is MIT licensed. Data is subject to the licenses above.
